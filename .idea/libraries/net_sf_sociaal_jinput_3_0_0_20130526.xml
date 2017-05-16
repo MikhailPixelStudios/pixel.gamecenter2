@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="net.sf.sociaal:jinput:3.0.0.20130526" type="repository">
+    <properties maven-id="net.sf.sociaal:jinput:3.0.0.20130526" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/net/sf/sociaal/jinput/3.0.0.20130526/jinput-3.0.0.20130526.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

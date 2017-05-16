@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="src">
+    <CLASSES />
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/src/jinput-master.zip!/jinput-master/applet/src" />
+      <root url="jar://$PROJECT_DIR$/src/jinput-master.zip!/jinput-master/coreAPI/src/java" />
+      <root url="jar://$PROJECT_DIR$/src/jinput-master.zip!/jinput-master/plugins/OSX/src/java" />
+      <root url="jar://$PROJECT_DIR$/src/jinput-master.zip!/jinput-master/plugins/awt/src" />
+      <root url="jar://$PROJECT_DIR$/src/jinput-master.zip!/jinput-master/plugins/linux/src/java" />
+      <root url="jar://$PROJECT_DIR$/src/jinput-master.zip!/jinput-master/plugins/windows/src/java" />
+      <root url="jar://$PROJECT_DIR$/src/jinput-master.zip!/jinput-master/plugins/wintab/src/java" />
+    </SOURCES>
+  </library>
+</component>
