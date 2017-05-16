@@ -63,6 +63,7 @@ public class Main {
             super.paint(g);
         }
     }
+    public  TrayIcon trayIcon;
     public WavePlayer play=null;
     static String game = "";
     static boolean isplay =false;
@@ -75,6 +76,7 @@ public class Main {
    static BufferedImage imagg2 = null;
    public   Thread t=null;
    public Gameboy gameboy;
+   public String url="";
     static class newPanel extends JPanel{
        public void paintComponent(Graphics g){
            Image im = null;
@@ -110,7 +112,7 @@ public class Main {
         f.pack();
         JLabel l = new JLabel();
         JLabel anekdot = new JLabel();
-        String url = "http://questforthebest.esy.es/";
+         url = "http://questforthebest.esy.es/";
         newPanel p= new newPanel();
 
         f.add(p,"Center");
@@ -121,6 +123,14 @@ public class Main {
         pan.add(l,"Left");
         JButton search = new JButton("Search");
 
+        JPanel pan2 = new JPanel();
+        pan2.add(pan,"Center");
+
+        try {
+            BufferedImage op = ImageIO.read(Main.class.getClassLoader().getResource("open.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
         JTextField fild = new JTextField();
@@ -152,7 +162,7 @@ public class Main {
         }
         f.setIconImage(imgg);
 
-        TrayIcon trayIcon = new TrayIcon(imgg);
+        trayIcon = new TrayIcon(imgg);
         trayIcon.setImageAutoSize(true);
         trayIcon.setToolTip("Pixel.GameCenter");
         try {
@@ -406,308 +416,8 @@ public class Main {
             b.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    if (e.getSource()==b){
-                        try {
-
-                           if(!products.get(finalJ).status.equals("Downloaded")) {
-                               downloadUsingStream(url + products.get(finalJ).down, products.get(finalJ).down, products.get(finalJ).size);
-                               trayIcon.displayMessage("Download", products.get(finalJ).version + " version of " + products.get(finalJ).name + " was downloaded!", TrayIcon.MessageType.INFO);
-                               int dialogButton = JOptionPane.YES_NO_OPTION;
-                               int dialogResult = JOptionPane.showConfirmDialog(null, "Would you like to run game?", "Download Completed!", dialogButton);
-                               if (dialogResult == JOptionPane.YES_OPTION) {
-                                   products.get(finalJ).status = "Downloaded";
-                               }
-                           }
-
-
-                                JFrame ff = new JFrame();
-                                try {
-                                    Image img = ImageIO.read(Main.class.getClassLoader().getResource("drawing.png"));
-                                    ff.setIconImage(img);
-                                } catch (IOException ee) {
-                                    ee.printStackTrace();
-                                }
-                                de.joergjahnke.gameboy.swing.GameboyCanvas canv = new de.joergjahnke.gameboy.swing.GameboyCanvas();
-                                 gameboy = new Gameboy();
-                                try {
-                                    gameboy.load(new FileInputStream(products.get(finalJ).down));
-                                } catch (IOException ee) {
-                                    ee.printStackTrace();
-                                }
-
-                                JPanel panel = new JPanel();
-                                JPanel panel2 = new JPanel();
-                                JButton min = new JButton("-");
-                                JButton max = new JButton("+");
-                                JButton sound = new JButton("Stop");
-                                JButton save = new JButton("Save");
-                                JButton load = new JButton("Load");
-
-
-                             play = new WavePlayer(gameboy.getSoundChip());
-
-                                save.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        File ff = new File(products.get(finalJ).name+".dat");
-                                        File ff2 = new File(products.get(finalJ).name+".dat");
-                                        JFileChooser chooser = new JFileChooser();
-                                        int  res = chooser.showSaveDialog(chooser);
-                                        if (res ==JFileChooser.APPROVE_OPTION){
-                                            ff=chooser.getSelectedFile();
-                                            ff2 = new File(ff.getAbsolutePath()+".PixelSound");
-                                            DataOutputStream stream = null;
-                                            DataOutputStream stream2 = null;
-                                            try {
-                                                stream = new DataOutputStream(new FileOutputStream(ff));
-                                                stream2 = new DataOutputStream(new FileOutputStream(ff2));
-
-                                            } catch (FileNotFoundException e1) {
-                                                e1.printStackTrace();
-                                            }
-                                            try {
-                                                    gameboy.serialize(stream);
-                                                   // gameboy.getSoundChip().serialize(stream2);
-
-                                                } catch (IOException e1) {
-                                                    e1.printStackTrace();
-                                                }
-                                        }
-                                    }
-                                });
-
-                                load.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        JFileChooser chooser = new JFileChooser();
-                                        File ff,ff2;
-
-                                        int  res = chooser.showSaveDialog(chooser);
-                                        if (res ==JFileChooser.APPROVE_OPTION){
-                                            ff=chooser.getSelectedFile();
-                                            ff2 = new File(ff.getAbsolutePath()+".PixelSound");
-                                            DataInputStream stream = null;
-
-                                            gameboy.pause();
-
-                                            DataInputStream stream2 = null;
-
-                                            try {
-                                                stream = new DataInputStream(new FileInputStream(ff));
-                                                stream2 = new DataInputStream(new FileInputStream(ff2));
-                                            } catch (FileNotFoundException e1) {
-                                                e1.printStackTrace();
-                                            }
-                                            try {
-
-                                              //  gameboy.load(new FileInputStream(new File(products.get(finalJ).down)));
-
-
-                                               // gameboy.getSoundChip().deserialize(stream2);
-                                                play = new WavePlayer(gameboy.getSoundChip());
-                                                gameboy.getSoundChip().addObserver(play);
-                                                gameboy.deserialize(stream);
-                                              //  t = new Thread(gameboy);
-                                                //t.start();
-                                                gameboy.resume();
-
-
-                                               // gameboy.update(play,null);
-
-                                            } catch (IOException e1) {
-                                                e1.printStackTrace();
-                                            }
-                                        }
-                                    }
-                                });
-                                sound.setFocusable(false);
-                                panel2.add(min,"West");
-                                panel2.add(max,"East");
-                                panel2.add(sound,"South");
-                                panel.add(panel2,"North");
-                                panel.add(canv,"Center");
-                                JPanel p = new JPanel();
-                                save.setFocusable(false);
-                                load.setFocusable(false);
-                                p.add(save,"East");
-                                p.add(load,"West");
-                                panel2.add(p,"South");
-
-                                canv.setScaling(minmax);
-
-                                min.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        minmax--;
-                                        canv.setScaling(minmax);
-                                    }
-                                });
-                                max.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        minmax++;
-                                        canv.setScaling(minmax);
-                                    }
-                                });
-
-                                canv.setGameboy(gameboy);
-                                ff.add(panel);
-                                canv.setPreferredSize(new Dimension(640,480));
-                                canv.setScaling(3);
-                                canv.setVisible(true);
-                                ff.setPreferredSize(new Dimension(510,530));
-                                ff.pack();
-                                min.setFocusable(false);
-                                max.setFocusable(false);
-
-                                ff.setTitle(products.get(finalJ).name);
-
-
-                                gameboy.getSoundChip().addObserver(play);
-
-
-
-                                
-                            
-
-                                sound.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        if (sound.getText().equals("Start")){
-                                            gameboy.resume();
-                                            sound.setText("Stop");
-                                        } else {
-                                            sound.setText("Start");
-                                            gameboy.pause();
-                                        }
-                                    }
-                                });
-                            Thread tt = new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    GamePadController cont = new GamePadController();
-
-                                    try {
-                                        Robot r = new Robot();
-                                        while (true) {
-                                            cont.poll();
-                                            if (cont.isButtonPressed(4)) {
-                                            r.keyPress(KeyEvent.VK_A);
-                                            // System.out.print('a');
-                                                r.delay(5);
-                                             r.keyRelease(KeyEvent.VK_A);
-
-                                            }
-                                            if (cont.isButtonPressed(3)) {
-                                                r.keyPress(KeyEvent.VK_B);
-                                             //   System.out.print('b');
-                                                r.delay(5);
-                                                r.keyRelease(KeyEvent.VK_B);
-
-                                            }
-                                            if (cont.getXYStickDir()==GamePadController.NORTH) {
-                                                r.keyPress(KeyEvent.VK_UP);
-                                             //   System.out.print("up");
-                                                r.delay(5);
-                                                r.keyRelease(KeyEvent.VK_UP);
-                                            }
-                                            if (cont.getXYStickDir()==GamePadController.SOUTH) {
-                                                r.keyPress(KeyEvent.VK_DOWN);
-                                              //  System.out.print("down");
-                                                r.delay(5);
-                                                r.keyRelease(KeyEvent.VK_DOWN);
-                                            }
-                                            if (cont.getXYStickDir()==GamePadController.WEST) {
-                                                r.keyPress(KeyEvent.VK_LEFT);
-                                              //  System.out.print("down");
-                                                r.delay(5);
-                                                r.keyRelease(KeyEvent.VK_LEFT);
-                                            }
-                                            if (cont.getXYStickDir()==GamePadController.EAST) {
-                                                r.keyPress(KeyEvent.VK_RIGHT);
-                                               // System.out.print("down");
-                                                r.delay(5);
-                                                r.keyRelease(KeyEvent.VK_RIGHT);
-                                            }
-                                            if (cont.isButtonPressed(9)) {
-                                                r.keyPress(KeyEvent.VK_SPACE);
-                                               // System.out.print("down");
-                                                r.delay(5);
-                                                r.keyRelease(KeyEvent.VK_SPACE);
-                                            }
-
-                                            if (cont.isButtonPressed(10)) {
-                                                r.keyPress(KeyEvent.VK_ENTER);
-                                                //System.out.print("down");
-                                                r.delay(5);
-                                                r.keyRelease(KeyEvent.VK_ENTER);
-                                            }
-
-                                        }
-                                    } catch (AWTException e1) {
-                                        e1.printStackTrace();
-                                    }
-                                }
-                            });
-                            tt.start();
-
-                            Thread t =new Thread(gameboy);
-                            t.start();
-
-
-                            ff.addWindowListener(new WindowListener() {
-                                    @Override
-                                    public void windowOpened(WindowEvent e) {
-
-                                    }
-
-                                    @Override
-                                    public void windowClosing(WindowEvent e) {
-                                       gameboy.stop();
-                                       play.stop();
-                                       t.stop();
-                                       tt.stop();
-                                    }
-
-                                    @Override
-                                    public void windowClosed(WindowEvent e) {
-                                        gameboy.stop();
-                                        play.stop();
-                                        t.stop();
-                                        tt.stop();
-                                    }
-
-                                    @Override
-                                    public void windowIconified(WindowEvent e) {
-
-                                    }
-
-                                    @Override
-                                    public void windowDeiconified(WindowEvent e) {
-
-                                    }
-
-                                    @Override
-                                    public void windowActivated(WindowEvent e) {
-
-                                    }
-
-                                    @Override
-                                    public void windowDeactivated(WindowEvent e) {
-
-                                    }
-                                });
-                                ff.setVisible(true);
-
-
-
-                        } catch (IOException ee) {
-                            ee.printStackTrace();
-                        }
-
-
-
-
+                    if (e.getSource()==b) {
+                        GameBoyFrame gbf = new GameBoyFrame(products.get(finalJ));
                     }
                 }
             });
@@ -715,308 +425,10 @@ public class Main {
             b2.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    if (e.getSource()==b2){
-                        try {
-
-                            if(!products.get(finalJ).status.equals("Downloaded")) {
-                                downloadUsingStream(url + products.get(finalJ).down, products.get(finalJ).down, products.get(finalJ).size);
-                                trayIcon.displayMessage("Download", products.get(finalJ).version + " version of " + products.get(finalJ).name + " was downloaded!", TrayIcon.MessageType.INFO);
-                                int dialogButton = JOptionPane.YES_NO_OPTION;
-                                int dialogResult = JOptionPane.showConfirmDialog(null, "Would you like to run game?", "Download Completed!", dialogButton);
-                                if (dialogResult == JOptionPane.YES_OPTION) {
-                                    products.get(finalJ).status = "Downloaded";
-                                }
-                            }
-
-
-                            JFrame ff = new JFrame();
-                            try {
-                                Image img = ImageIO.read(Main.class.getClassLoader().getResource("drawing.png"));
-                                ff.setIconImage(img);
-                            } catch (IOException ee) {
-                                ee.printStackTrace();
-                            }
-                            de.joergjahnke.gameboy.swing.GameboyCanvas canv = new de.joergjahnke.gameboy.swing.GameboyCanvas();
-                            gameboy = new Gameboy();
-                            try {
-                                gameboy.load(new FileInputStream(products.get(finalJ).down));
-                            } catch (IOException ee) {
-                                ee.printStackTrace();
-                            }
-
-                            JPanel panel = new JPanel();
-                            JPanel panel2 = new JPanel();
-                            JButton min = new JButton("-");
-                            JButton max = new JButton("+");
-                            JButton sound = new JButton("Stop");
-                            JButton save = new JButton("Save");
-                            JButton load = new JButton("Load");
-
-
-                            play = new WavePlayer(gameboy.getSoundChip());
-                            save.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    File ff = new File(products.get(finalJ).name+".dat");
-                                    File ff2 = new File(products.get(finalJ).name+".dat");
-                                    JFileChooser chooser = new JFileChooser();
-                                    int  res = chooser.showSaveDialog(chooser);
-                                    if (res ==JFileChooser.APPROVE_OPTION){
-                                        ff=chooser.getSelectedFile();
-                                        ff2 = new File(ff.getAbsolutePath()+".PixelSound");
-                                        DataOutputStream stream = null;
-                                        DataOutputStream stream2 = null;
-                                        try {
-                                            stream = new DataOutputStream(new FileOutputStream(ff));
-                                            stream2 = new DataOutputStream(new FileOutputStream(ff2));
-
-                                        } catch (FileNotFoundException e1) {
-                                            e1.printStackTrace();
-                                        }
-                                        try {
-                                            gameboy.serialize(stream);
-                                        //    gameboy.getSoundChip().serialize(stream2);
-
-                                        } catch (IOException e1) {
-                                            e1.printStackTrace();
-                                        }
-                                    }
-                                }
-                            });
-
-                            load.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    JFileChooser chooser = new JFileChooser();
-                                    File ff,ff2;
-
-                                    int  res = chooser.showSaveDialog(chooser);
-                                    if (res ==JFileChooser.APPROVE_OPTION){
-                                        ff=chooser.getSelectedFile();
-                                        ff2 = new File(ff.getAbsolutePath()+".PixelSound");
-                                        DataInputStream stream = null;
-
-                                        gameboy.pause();
-
-                                        DataInputStream stream2 = null;
-
-                                        try {
-                                            stream = new DataInputStream(new FileInputStream(ff));
-                                            stream2 = new DataInputStream(new FileInputStream(ff2));
-                                        } catch (FileNotFoundException e1) {
-                                            e1.printStackTrace();
-                                        }
-                                        try {
-
-                                            //  gameboy.load(new FileInputStream(new File(products.get(finalJ).down)));
-
-
-                                            // gameboy.getSoundChip().deserialize(stream2);
-                                            play = new WavePlayer(gameboy.getSoundChip());
-                                            gameboy.getSoundChip().addObserver(play);
-                                            gameboy.deserialize(stream);
-                                            //  t = new Thread(gameboy);
-                                            //t.start();
-                                            gameboy.resume();
-
-
-                                            // gameboy.update(play,null);
-
-                                        } catch (IOException e1) {
-                                            e1.printStackTrace();
-                                        }
-                                    }
-                                }
-                            });
-                            sound.setFocusable(false);
-                            panel2.add(min,"West");
-                            panel2.add(max,"East");
-                            panel2.add(sound,"South");
-                            panel.add(panel2,"North");
-                            panel.add(canv,"Center");
-                            JPanel p = new JPanel();
-                            save.setFocusable(false);
-                            load.setFocusable(false);
-                            p.add(save,"East");
-                            p.add(load,"West");
-                            panel2.add(p,"South");
-
-                            canv.setScaling(minmax);
-
-                            min.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    minmax--;
-                                    canv.setScaling(minmax);
-                                }
-                            });
-                            max.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    minmax++;
-                                    canv.setScaling(minmax);
-                                }
-                            });
-
-                            canv.setGameboy(gameboy);
-                            ff.add(panel);
-                            canv.setPreferredSize(new Dimension(640,480));
-                            canv.setScaling(3);
-                            canv.setVisible(true);
-                            ff.setPreferredSize(new Dimension(510,530));
-                            ff.pack();
-                            min.setFocusable(false);
-                            max.setFocusable(false);
-
-                            ff.setTitle(products.get(finalJ).name);
-
-
-                            gameboy.getSoundChip().addObserver(play);
-
-
-
-
-
-
-                            sound.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    if (sound.getText().equals("Start")){
-                                        gameboy.resume();
-                                        sound.setText("Stop");
-                                    } else {
-                                        sound.setText("Start");
-                                        gameboy.pause();
-                                    }
-                                }
-                            });
-                            Thread tt = new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    GamePadController cont = new GamePadController();
-
-                                    try {
-                                        Robot r = new Robot();
-                                        while (true) {
-                                            cont.poll();
-                                            if (cont.isButtonPressed(4)) {
-                                                r.keyPress(KeyEvent.VK_A);
-                                                // System.out.print('a');
-                                                r.delay(5);
-                                                r.keyRelease(KeyEvent.VK_A);
-
-                                            }
-                                            if (cont.isButtonPressed(3)) {
-                                                r.keyPress(KeyEvent.VK_B);
-                                                //   System.out.print('b');
-                                                r.delay(5);
-                                                r.keyRelease(KeyEvent.VK_B);
-
-                                            }
-                                            if (cont.getXYStickDir()==GamePadController.NORTH) {
-                                                r.keyPress(KeyEvent.VK_UP);
-                                                //   System.out.print("up");
-                                                r.delay(5);
-                                                r.keyRelease(KeyEvent.VK_UP);
-                                            }
-                                            if (cont.getXYStickDir()==GamePadController.SOUTH) {
-                                                r.keyPress(KeyEvent.VK_DOWN);
-                                                //  System.out.print("down");
-                                                r.delay(5);
-                                                r.keyRelease(KeyEvent.VK_DOWN);
-                                            }
-                                            if (cont.getXYStickDir()==GamePadController.WEST) {
-                                                r.keyPress(KeyEvent.VK_LEFT);
-                                                //  System.out.print("down");
-                                                r.delay(5);
-                                                r.keyRelease(KeyEvent.VK_LEFT);
-                                            }
-                                            if (cont.getXYStickDir()==GamePadController.EAST) {
-                                                r.keyPress(KeyEvent.VK_RIGHT);
-                                                // System.out.print("down");
-                                                r.delay(5);
-                                                r.keyRelease(KeyEvent.VK_RIGHT);
-                                            }
-                                            if (cont.isButtonPressed(9)) {
-                                                r.keyPress(KeyEvent.VK_SPACE);
-                                                // System.out.print("down");
-                                                r.delay(5);
-                                                r.keyRelease(KeyEvent.VK_SPACE);
-                                            }
-
-                                            if (cont.isButtonPressed(10)) {
-                                                r.keyPress(KeyEvent.VK_ENTER);
-                                                //System.out.print("down");
-                                                r.delay(5);
-                                                r.keyRelease(KeyEvent.VK_ENTER);
-                                            }
-
-                                        }
-                                    } catch (AWTException e1) {
-                                        e1.printStackTrace();
-                                    }
-                                }
-                            });
-                            tt.start();
-
-                            Thread t =new Thread(gameboy);
-                            t.start();
-
-
-                            ff.addWindowListener(new WindowListener() {
-                                @Override
-                                public void windowOpened(WindowEvent e) {
-
-                                }
-
-                                @Override
-                                public void windowClosing(WindowEvent e) {
-                                    gameboy.stop();
-                                    play.stop();
-                                    t.stop();
-                                    tt.stop();
-                                }
-
-                                @Override
-                                public void windowClosed(WindowEvent e) {
-                                    gameboy.stop();
-                                    play.stop();
-                                    t.stop();
-                                    tt.stop();
-                                }
-
-                                @Override
-                                public void windowIconified(WindowEvent e) {
-
-                                }
-
-                                @Override
-                                public void windowDeiconified(WindowEvent e) {
-
-                                }
-
-                                @Override
-                                public void windowActivated(WindowEvent e) {
-
-                                }
-
-                                @Override
-                                public void windowDeactivated(WindowEvent e) {
-
-                                }
-                            });
-                            ff.setVisible(true);
-
-
-
-                        } catch (IOException ee) {
-                            ee.printStackTrace();
-                        }
-
-
-
-
+                    if (e.getSource()==b2) {
+                        GameBoyFrame gbf = new GameBoyFrame(products.get(finalJ));
                     }
+
                 }
             });
 
@@ -1123,7 +535,312 @@ public class Main {
         f.setVisible(true);
 
     }
+    class GameBoyFrame extends JFrame{
+        elem e;
+        GameBoyFrame(elem e){
+            this.e=e;
+            try {
 
+                if(!e.status.equals("Downloaded")) {
+                    downloadUsingStream(url + e.down, e.down, e.size);
+                    trayIcon.displayMessage("Download",e.version + " version of " +e.name + " was downloaded!", TrayIcon.MessageType.INFO);
+                    int dialogButton = JOptionPane.YES_NO_OPTION;
+                    int dialogResult = JOptionPane.showConfirmDialog(null, "Would you like to run game?", "Download Completed!", dialogButton);
+                    if (dialogResult == JOptionPane.YES_OPTION) {
+                        e.status = "Downloaded";
+                    }
+                }
+
+
+
+                try {
+                    Image img = ImageIO.read(Main.class.getClassLoader().getResource("drawing.png"));
+                    this.setIconImage(img);
+                } catch (IOException ee) {
+                    ee.printStackTrace();
+                }
+                de.joergjahnke.gameboy.swing.GameboyCanvas canv = new de.joergjahnke.gameboy.swing.GameboyCanvas();
+                gameboy = new Gameboy();
+                try {
+                    gameboy.load(new FileInputStream(e.down));
+                } catch (IOException ee) {
+                    ee.printStackTrace();
+                }
+
+                JPanel panel = new JPanel();
+                JPanel panel2 = new JPanel();
+                JButton min = new JButton("-");
+                JButton max = new JButton("+");
+                JButton sound = new JButton("Stop");
+                JButton save = new JButton("Save");
+                JButton load = new JButton("Load");
+
+
+                play = new WavePlayer(gameboy.getSoundChip());
+                save.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent ee) {
+                        File ff = new File(e.name+".dat");
+                        File ff2 = new File(e.name+".dat");
+                        JFileChooser chooser = new JFileChooser();
+                        int  res = chooser.showSaveDialog(chooser);
+                        if (res ==JFileChooser.APPROVE_OPTION){
+                            ff=chooser.getSelectedFile();
+                            ff2 = new File(ff.getAbsolutePath()+".PixelSound");
+                            DataOutputStream stream = null;
+                            DataOutputStream stream2 = null;
+                            try {
+                                stream = new DataOutputStream(new FileOutputStream(ff));
+                                stream2 = new DataOutputStream(new FileOutputStream(ff2));
+
+                            } catch (FileNotFoundException e1) {
+                                e1.printStackTrace();
+                            }
+                            try {
+                                gameboy.serialize(stream);
+                                //    gameboy.getSoundChip().serialize(stream2);
+
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+                    }
+                });
+
+                load.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        JFileChooser chooser = new JFileChooser();
+                        File ff,ff2;
+
+                        int  res = chooser.showSaveDialog(chooser);
+                        if (res ==JFileChooser.APPROVE_OPTION){
+                            ff=chooser.getSelectedFile();
+                            ff2 = new File(ff.getAbsolutePath()+".PixelSound");
+                            DataInputStream stream = null;
+
+                            gameboy.pause();
+
+                            DataInputStream stream2 = null;
+
+                            try {
+                                stream = new DataInputStream(new FileInputStream(ff));
+                                stream2 = new DataInputStream(new FileInputStream(ff2));
+                            } catch (FileNotFoundException e1) {
+                                e1.printStackTrace();
+                            }
+                            try {
+
+                                //  gameboy.load(new FileInputStream(new File(products.get(finalJ).down)));
+
+
+                                // gameboy.getSoundChip().deserialize(stream2);
+                                play = new WavePlayer(gameboy.getSoundChip());
+                                gameboy.getSoundChip().addObserver(play);
+                                gameboy.deserialize(stream);
+                                //  t = new Thread(gameboy);
+                                //t.start();
+                                gameboy.resume();
+
+
+                                // gameboy.update(play,null);
+
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+                    }
+                });
+                sound.setFocusable(false);
+                panel2.add(min,"West");
+                panel2.add(max,"East");
+                panel2.add(sound,"South");
+                panel.add(panel2,"North");
+                panel.add(canv,"Center");
+                JPanel p = new JPanel();
+                save.setFocusable(false);
+                load.setFocusable(false);
+                p.add(save,"East");
+                p.add(load,"West");
+                panel2.add(p,"South");
+
+                canv.setScaling(minmax);
+
+                min.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        minmax--;
+                        canv.setScaling(minmax);
+                    }
+                });
+                max.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        minmax++;
+                        canv.setScaling(minmax);
+                    }
+                });
+
+                canv.setGameboy(gameboy);
+                this.add(panel);
+                canv.setPreferredSize(new Dimension(640,480));
+                canv.setScaling(3);
+                canv.setVisible(true);
+                this.setPreferredSize(new Dimension(510,530));
+                this.pack();
+                min.setFocusable(false);
+                max.setFocusable(false);
+
+                this.setTitle(e.name);
+
+
+                gameboy.getSoundChip().addObserver(play);
+
+
+
+
+
+
+                sound.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (sound.getText().equals("Start")){
+                            gameboy.resume();
+                            sound.setText("Stop");
+                        } else {
+                            sound.setText("Start");
+                            gameboy.pause();
+                        }
+                    }
+                });
+                Thread tt = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        GamePadController cont = new GamePadController();
+
+                        try {
+                            Robot r = new Robot();
+                            while (true) {
+                                cont.poll();
+                                if (cont.isButtonPressed(4)) {
+                                    r.keyPress(KeyEvent.VK_A);
+                                    // System.out.print('a');
+                                    r.delay(5);
+                                    r.keyRelease(KeyEvent.VK_A);
+
+                                }
+                                if (cont.isButtonPressed(3)) {
+                                    r.keyPress(KeyEvent.VK_B);
+                                    //   System.out.print('b');
+                                    r.delay(5);
+                                    r.keyRelease(KeyEvent.VK_B);
+
+                                }
+                                if (cont.getXYStickDir()==GamePadController.NORTH) {
+                                    r.keyPress(KeyEvent.VK_UP);
+                                    //   System.out.print("up");
+                                    r.delay(5);
+                                    r.keyRelease(KeyEvent.VK_UP);
+                                }
+                                if (cont.getXYStickDir()==GamePadController.SOUTH) {
+                                    r.keyPress(KeyEvent.VK_DOWN);
+                                    //  System.out.print("down");
+                                    r.delay(5);
+                                    r.keyRelease(KeyEvent.VK_DOWN);
+                                }
+                                if (cont.getXYStickDir()==GamePadController.WEST) {
+                                    r.keyPress(KeyEvent.VK_LEFT);
+                                    //  System.out.print("down");
+                                    r.delay(5);
+                                    r.keyRelease(KeyEvent.VK_LEFT);
+                                }
+                                if (cont.getXYStickDir()==GamePadController.EAST) {
+                                    r.keyPress(KeyEvent.VK_RIGHT);
+                                    // System.out.print("down");
+                                    r.delay(5);
+                                    r.keyRelease(KeyEvent.VK_RIGHT);
+                                }
+                                if (cont.isButtonPressed(9)) {
+                                    r.keyPress(KeyEvent.VK_SPACE);
+                                    // System.out.print("down");
+                                    r.delay(5);
+                                    r.keyRelease(KeyEvent.VK_SPACE);
+                                }
+
+                                if (cont.isButtonPressed(10)) {
+                                    r.keyPress(KeyEvent.VK_ENTER);
+                                    //System.out.print("down");
+                                    r.delay(5);
+                                    r.keyRelease(KeyEvent.VK_ENTER);
+                                }
+
+                            }
+                        } catch (AWTException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                });
+                tt.start();
+
+                Thread t =new Thread(gameboy);
+                t.start();
+
+
+                this.addWindowListener(new WindowListener() {
+                    @Override
+                    public void windowOpened(WindowEvent e) {
+
+                    }
+
+                    @Override
+                    public void windowClosing(WindowEvent e) {
+                        gameboy.stop();
+                        play.stop();
+                        t.stop();
+                        tt.stop();
+                    }
+
+                    @Override
+                    public void windowClosed(WindowEvent e) {
+                        gameboy.stop();
+                        play.stop();
+                        t.stop();
+                        tt.stop();
+                    }
+
+                    @Override
+                    public void windowIconified(WindowEvent e) {
+
+                    }
+
+                    @Override
+                    public void windowDeiconified(WindowEvent e) {
+
+                    }
+
+                    @Override
+                    public void windowActivated(WindowEvent e) {
+
+                    }
+
+                    @Override
+                    public void windowDeactivated(WindowEvent e) {
+
+                    }
+                });
+                this.setVisible(true);
+
+
+
+            } catch (IOException ee) {
+                ee.printStackTrace();
+            }
+
+
+
+
+        }
+    }
     class elem  extends JPanel{
         String name,version,down,info,platform,imageurl,status;
         int size;

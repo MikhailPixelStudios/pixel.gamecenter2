@@ -10,6 +10,7 @@
       <element id="file-copy" path="$PROJECT_DIR$/back.png" />
       <element id="file-copy" path="$PROJECT_DIR$/back2.png" />
       <element id="file-copy" path="$PROJECT_DIR$/src/back.jpg" />
+      <element id="file-copy" path="$PROJECT_DIR$/open.png" />
     </root>
   </artifact>
 </component>
