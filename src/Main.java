@@ -70,7 +70,7 @@ public class Main {
     public WavePlayer play = null;
     static String game = "";
     static boolean isplay = false;
-    private static int minmax = 1;
+    private static int minmax = 3;
     static boolean bb = false;
     private static JFrame f2 = new JFrame();
     static JFrame ff2 = new JFrame();
@@ -577,7 +577,9 @@ ope.setToolTipText("Load ROM");
         f.repaint();
         f.setVisible(true);
     }
-
+static int oldw=0;
+    static Color cc = null;
+  static   int oldh=0;
     class GameBoyFrame extends JFrame {
         elem e;
 
@@ -609,14 +611,57 @@ ope.setToolTipText("Load ROM");
                 } catch (IOException ee) {
                     ee.printStackTrace();
                 }
-
+                int w= Toolkit.getDefaultToolkit ().getScreenSize ().width;
+                int h = Toolkit.getDefaultToolkit ().getScreenSize ().height;
                 JPanel panel = new JPanel();
                 JPanel panel2 = new JPanel();
+                JMenuBar bar = new JMenuBar();
                 JButton min = new JButton("-");
                 JButton max = new JButton("+");
                 JButton sound = new JButton("Stop");
                 JButton save = new JButton("Save");
                 JButton load = new JButton("Load");
+                JCheckBox ful = new JCheckBox("Fullscreen");
+                GameBoyFrame gbf = this;
+                 oldw =this.getWidth();
+                 oldh = this.getHeight();
+                 ful.setFocusable(false);
+                 int oldscal=0;
+                ful.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (ful.isSelected()) {
+                             oldw = gbf.getWidth();
+                             oldh = gbf.getHeight();
+                            cc = panel.getBackground();
+                            panel.setBackground(Color.BLACK);
+                            gbf.repaint();
+                            min.disable();
+                            max.disable();
+
+                            canv.setScaling(h/144);
+                            gbf.setExtendedState(JFrame.MAXIMIZED_BOTH);
+                            gbf.setUndecorated(true);
+
+                        } else {
+                            gbf.setPreferredSize(new Dimension(oldw,oldh));
+                            panel.setBackground(cc);
+                            min.enable();
+                            max.enable();
+                            canv.setScaling(minmax);
+                            gbf.pack();
+                        }
+                    }
+                });
+                bar.add(min);
+                bar.add(max);
+                bar.add(sound);
+                bar.add(save);
+                bar.add(load);
+                bar.add(ful);
+
+
+
 
 
                 play = new WavePlayer(gameboy.getSoundChip());
@@ -695,32 +740,34 @@ ope.setToolTipText("Load ROM");
                     }
                 });
                 sound.setFocusable(false);
-                panel2.add(min, "West");
-                panel2.add(max, "East");
-                panel2.add(sound, "South");
-                panel.add(panel2, "North");
+
                 panel.add(canv, "Center");
-                JPanel p = new JPanel();
+               // JPanel p = new JPanel();
                 save.setFocusable(false);
                 load.setFocusable(false);
-                p.add(save, "East");
-                p.add(load, "West");
-                panel2.add(p, "South");
+               // p.add(save, "East");
+                //p.add(load, "West");
+                bar.setLayout(new FlowLayout(FlowLayout.CENTER));
+                this.setJMenuBar(bar);
 
                 canv.setScaling(minmax);
 
                 min.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        minmax--;
-                        canv.setScaling(minmax);
+                        if (!ful.isSelected()) {
+                            minmax--;
+                            canv.setScaling(minmax);
+                        }
                     }
                 });
                 max.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        minmax++;
-                        canv.setScaling(minmax);
+                        if (!ful.isSelected()) {
+                            minmax++;
+                            canv.setScaling(minmax);
+                        }
                     }
                 });
 
