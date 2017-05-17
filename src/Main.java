@@ -641,7 +641,7 @@ static int oldw=0;
 
                             canv.setScaling(h/144);
                             gbf.setExtendedState(JFrame.MAXIMIZED_BOTH);
-                            gbf.setUndecorated(true);
+                         //   gbf.setUndecorated(true);
 
                         } else {
                             gbf.setPreferredSize(new Dimension(oldw,oldh));
