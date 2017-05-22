@@ -5,15 +5,22 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.List;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Vector;
+import java.util.*;
 
+import com.alee.extended.drag.FileDragAndDropHandler;
 import com.alee.laf.WebLookAndFeel;
 import de.joergjahnke.common.extendeddevices.WavePlayer;
 import de.joergjahnke.gameboy.core.Gameboy;
@@ -24,7 +31,6 @@ import sun.awt.image.InputStreamImageSource;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 
 import net.java.games.*;
 
@@ -180,13 +186,37 @@ ope.setToolTipText("Load ROM");
                 int res = chooser.showSaveDialog(chooser);
                 if (res == JFileChooser.APPROVE_OPTION) {
                     ff = chooser.getSelectedFile();
-                   elem ee = new elem("game","fin",ff.getName(),"",(int)ff.getTotalSpace(),"","","");
+                   elem ee = new elem("\""+ff.getName()+"\"","fin",ff.getName(),"",(int)ff.getTotalSpace(),"","","");
 
                 GameBoyFrame f = new GameBoyFrame(ee);
                 }
             }
         });
 
+       f.setDropTarget(new DropTarget(){
+           public synchronized void drop(DropTargetDropEvent evt) {
+               try {
+                   f.getGraphics().drawString("Drop here to play!",evt.getLocation().x,evt.getLocation().y);
+
+                   evt.acceptDrop(DnDConstants.ACTION_COPY);
+
+                   DataFlavor[] flavors = evt.getTransferable().getTransferDataFlavors();
+                   DataFlavor flavor = flavors[0];
+                       // If the drop items are files
+                  java.util.List<File> droppedFiles= (java.util.List<File>) evt.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+                  File file = droppedFiles.get(0);
+
+                           elem ee = new elem("\""+file.getName()+"\"","fin",file.getName(),"",(int)file.getTotalSpace(),"","","");
+                           GameBoyFrame fr = new GameBoyFrame(ee);
+
+
+
+
+               } catch (Exception ex) {
+                   ex.printStackTrace();
+               }
+           }
+       });
         PopupMenu popup = new PopupMenu();
         MenuItem item = new MenuItem("Close");
 
@@ -219,15 +249,23 @@ ope.setToolTipText("Load ROM");
         } catch (AWTException e1) {
             e1.printStackTrace();
         }
-
-        try {
-            int n = 0;
-            // качаем файл с помощью Stream
-            downloadUsingStream(url + "pgc.txt", "pgc.txt", n);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+ if (checkInternetConnection()) {
+     try {
+         int n = 0;
+         // качаем файл с помощью Stream
+         downloadUsingStream(url + "pgc.txt", "pgc.txt", n);
+     } catch (IOException e) {
+         e.printStackTrace();
+     }
+ } else {
+     File fil = new File("pgc.txt");
+     if (fil.exists()){
+        JOptionPane.showMessageDialog(f,"There is a problem with your Internet connection! Would you like to continue in offline mode?");
+     } else  {
+         JOptionPane.showMessageDialog(f,"There is a problem with your Internet connection!");
+         System.exit(0);
+     }
+ }
 
         File ff = new File("pgc.txt");
         String s = "";
@@ -586,16 +624,17 @@ static int oldw=0;
         GameBoyFrame(elem e) {
             this.e = e;
             try {
-
-                if (!e.status.equals("Downloaded")) {
-                    downloadUsingStream(url + e.down, e.down, e.size);
-                    trayIcon.displayMessage("Download", e.version + " version of " + e.name + " was downloaded!", TrayIcon.MessageType.INFO);
-                    int dialogButton = JOptionPane.YES_NO_OPTION;
-                    int dialogResult = JOptionPane.showConfirmDialog(null, "Would you like to run game?", "Download Completed!", dialogButton);
-                    if (dialogResult == JOptionPane.YES_OPTION) {
-                        e.status = "Downloaded";
-                    }
-                }
+              if (checkInternetConnection()) {
+                  if (!e.status.equals("Downloaded")) {
+                      downloadUsingStream(url + e.down, e.down, e.size);
+                      trayIcon.displayMessage("Download", e.version + " version of " + e.name + " was downloaded!", TrayIcon.MessageType.INFO);
+                      int dialogButton = JOptionPane.YES_NO_OPTION;
+                      int dialogResult = JOptionPane.showConfirmDialog(null, "Would you like to run game?", "Download Completed!", dialogButton);
+                      if (dialogResult == JOptionPane.YES_OPTION) {
+                          e.status = "Downloaded";
+                      }
+                  }
+              } else JOptionPane.showMessageDialog(this,"There is a problem with your internet connection!");
 
 
                 try {
@@ -606,6 +645,7 @@ static int oldw=0;
                 }
                 de.joergjahnke.gameboy.swing.GameboyCanvas canv = new de.joergjahnke.gameboy.swing.GameboyCanvas();
                 gameboy = new Gameboy();
+
                 try {
                     gameboy.load(new FileInputStream(e.down));
                 } catch (IOException ee) {
@@ -674,12 +714,12 @@ static int oldw=0;
                         int res = chooser.showSaveDialog(chooser);
                         if (res == JFileChooser.APPROVE_OPTION) {
                             ff = chooser.getSelectedFile();
-                            ff2 = new File(ff.getAbsolutePath() + ".PixelSound");
+                        //    ff2 = new File(ff.getAbsolutePath() + ".PixelSound");
                             DataOutputStream stream = null;
                             DataOutputStream stream2 = null;
                             try {
                                 stream = new DataOutputStream(new FileOutputStream(ff));
-                                stream2 = new DataOutputStream(new FileOutputStream(ff2));
+                               // stream2 = new DataOutputStream(new FileOutputStream(ff2));
 
                             } catch (FileNotFoundException e1) {
                                 e1.printStackTrace();
@@ -804,12 +844,18 @@ static int oldw=0;
                     public void run() {
                         if (gamepad.isSelected()) {
                             GamePadController cont = new GamePadController();
-
+                            int k=0;
                             try {
                                 Robot r = new Robot();
                                 while (true) {
                                     cont.poll();
                                     if (cont.isButtonPressed(4)) {
+                                        Thread t1 = new Thread(new Runnable() {
+                                            @Override
+                                            public void run() {
+
+                                            }
+                                        });
                                         r.keyPress(KeyEvent.VK_A);
                                         // System.out.print('a');
                                         r.delay(5);
@@ -826,7 +872,7 @@ static int oldw=0;
                                     if (cont.getXYStickDir() == GamePadController.NORTH) {
                                         r.keyPress(KeyEvent.VK_UP);
                                         //   System.out.print("up");
-                                        r.delay(5);
+                                       r.delay(5);
                                         r.keyRelease(KeyEvent.VK_UP);
                                     }
                                     if (cont.getXYStickDir() == GamePadController.SOUTH) {
@@ -859,6 +905,10 @@ static int oldw=0;
                                         //System.out.print("down");
                                         r.delay(5);
                                         r.keyRelease(KeyEvent.VK_ENTER);
+                                    }
+
+                                    if (cont.getXYStickDir() == GamePadController.NONE){
+
                                     }
 
                                 }
@@ -954,6 +1004,29 @@ static int oldw=0;
         });
 
 
+    }
+
+    private static boolean checkInternetConnection() {
+        Boolean result = false;
+        HttpURLConnection con = null;
+        try {
+            // HttpURLConnection.setFollowRedirects(false);
+            // HttpURLConnection.setInstanceFollowRedirects(false)
+            con = (HttpURLConnection) new URL("http://www.google.com").openConnection();
+            con.setRequestMethod("HEAD");
+            result = (con.getResponseCode() == HttpURLConnection.HTTP_OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (con != null) {
+                try {
+                    con.disconnect();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return result;
     }
 
     public class gbthread extends Thread {
