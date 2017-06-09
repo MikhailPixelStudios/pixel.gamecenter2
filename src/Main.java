@@ -18,6 +18,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.*;
 import java.util.*;
 
 import com.alee.extended.drag.FileDragAndDropHandler;
@@ -34,6 +35,7 @@ import java.awt.event.ActionListener;
 
 import net.java.games.*;
 
+
 /**
  * Created by mikha on 28.04.2017.
  */
@@ -47,6 +49,7 @@ public class Main {
         return (os.contains("win"));
 
     }
+
 
     public static boolean isMac() {
 
@@ -76,6 +79,7 @@ public class Main {
     public WavePlayer play = null;
     static String game = "";
     static boolean isplay = false;
+    static boolean openusr=false;
     private static int minmax = 3;
     static boolean bb = false;
     private static JFrame f2 = new JFrame();
@@ -87,6 +91,21 @@ public class Main {
     public Gameboy gameboy;
     public String url = "";
     public JCheckBox gamepad;
+    static boolean islogin = false;
+    static JFrame frame = new JFrame("Pixel.Accoint");
+
+    public static int tek=0;
+    static int nottek=0;
+    public static String content="";
+
+    private static Connection con;
+    private static Statement stmt;
+    private static ResultSet rs;
+    public static String query;
+    private static final String url2 = "jdbc:mysql://sql11.freemysqlhosting.net/sql11177728";
+    public static final String user = "sql11177728";
+    private static final String password = "k5YlrACJe4";
+    static String img="";
 
     static class newPanel extends JPanel {
         public void paintComponent(Graphics g) {
@@ -118,7 +137,12 @@ static class newmenubar extends JMenuBar{
             g.drawImage(imagg2, 0, 0, null);
         }
     }
-
+    public static JTextField username = new JTextField();
+    public static   JTextField pass = new JPasswordField();
+    public static Object[] message = {
+            "Username:", username,
+            "Password:", pass
+    };
     Main() {
 
 
@@ -131,7 +155,7 @@ static class newmenubar extends JMenuBar{
 
         f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         f.setLayout(new BorderLayout());
-        f.setPreferredSize(new Dimension(870, 620));
+        f.setPreferredSize(new Dimension(890, 620));
         f.pack();
         JLabel l = new JLabel();
         JLabel anekdot = new JLabel();
@@ -140,6 +164,7 @@ static class newmenubar extends JMenuBar{
 
         f.add(p, "Center");
         f.setResizable(false);
+        f.setLocationRelativeTo(null);
 gamepad = new JCheckBox("Gamepad");
         JPanel pan = new JPanel();
         pan.setLayout(new GridLayout(1, 3));
@@ -147,7 +172,21 @@ gamepad = new JCheckBox("Gamepad");
         JButton search = new JButton("Search");
 
         JPanel pan2 = new JPanel();
+        //JPanel user = new JPanel();
+        JButton open_user = new JButton();
+
+        Image op2 = null;
+        try {
+            op2 = ImageIO.read(Main.class.getClassLoader().getResource("user.jpg"));
+            op2 = op2.getScaledInstance(20, 20, 1);
+            open_user.setIcon(new ImageIcon(op2));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        open_user.setToolTipText("Login into Pixel.Account");
         pan2.add(pan, "Center");
+     //  pan.add(user,"East");
+      //  p.add(user,"East");
         newmenubar bar = new newmenubar();
 
         Image op = null;
@@ -163,6 +202,7 @@ gamepad = new JCheckBox("Gamepad");
         JTextField fild = new JTextField(10);
         pan.add(fild, "Right");
         pan.add(search);
+        bar.add(open_user);
         bar.add(l);
         bar.setLayout(new FlowLayout(FlowLayout.RIGHT));
         bar.add(gamepad);
@@ -196,7 +236,7 @@ ope.setToolTipText("Load ROM");
        f.setDropTarget(new DropTarget(){
            public synchronized void drop(DropTargetDropEvent evt) {
                try {
-                   f.getGraphics().drawString("Drop here to play!",evt.getLocation().x,evt.getLocation().y);
+                 //  f.getGraphics().drawString("Drop here to play!",evt.getLocation().x,evt.getLocation().y);
 
                    evt.acceptDrop(DnDConstants.ACTION_COPY);
 
@@ -220,7 +260,328 @@ ope.setToolTipText("Load ROM");
         PopupMenu popup = new PopupMenu();
         MenuItem item = new MenuItem("Close");
 
+open_user.addActionListener(new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    JButton use = new JButton("");
+                                    Image op3 = null;
+                                    try {
+                                        op3 = ImageIO.read(Main.class.getClassLoader().getResource("user.jpg"));
+                                        op3 = op3.getScaledInstance(350, 350, 1);
+                                        use.setIcon(new ImageIcon(op3));
+                                    } catch (IOException ee) {
+                                        ee.printStackTrace();
+                                    }
 
+                                    frame.setPreferredSize(new Dimension(400, 600));
+                                    frame.setResizable(false);
+                                    JPanel panel = new JPanel();
+                                    JPanel org = new JPanel();
+
+                                    org.setLayout(new GridLayout(3,1));
+
+                                    JButton chat = new JButton();
+                                    Image op4 = null;
+                                    try {
+                                        op4 = ImageIO.read(Main.class.getClassLoader().getResource("dialog.jpg"));
+                                        op4 = op4.getScaledInstance(50, 50, 1);
+                                        chat.setIcon(new ImageIcon(op4));
+                                    } catch (IOException ee) {
+                                        ee.printStackTrace();
+                                    }
+                                    org.add(chat);
+
+                                    frame.add(panel);
+                                    panel.add(use, "Center");
+                                    panel.add(org,"South");
+                                    use.setToolTipText("Login into your Pixel.Account");
+                                    try {
+                                        Image img= ImageIO.read(Main.class.getClassLoader().getResource("drawing.png"));
+                                        frame.setIconImage(img);
+                                    } catch (IOException ee) {
+                                        ee.printStackTrace();
+                                    }
+
+                                    if (!openusr) {
+                                        use.setPreferredSize(new Dimension(350, 350));
+                                        //frame.add(use, "Center");
+                                        frame.setVisible(true);
+                                        openusr = !openusr;
+                                    } else {
+                                        frame.setVisible(false);
+                                        openusr = !openusr;
+                                    }
+                                    frame.pack();
+                                    use.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            int res = JOptionPane.showConfirmDialog(null, message, "Login", JOptionPane.OK_CANCEL_OPTION);
+                                            if (res == JOptionPane.OK_OPTION) {
+                                                query = "select * from `usertbl` where `username` like " + "\"" + username.getText() + "\" and `password` like \"" + pass.getText() + "\"";
+                                                try {
+                                                    Class.forName("org.h2.Driver");
+                                                } catch (ClassNotFoundException e3) {
+                                                    e3.printStackTrace();
+                                                }
+                                                try {
+                                                    con = DriverManager.getConnection(url2, user, password);
+                                                } catch (SQLException e1) {
+                                                    e1.printStackTrace();
+                                                }
+
+                                                // getting Statement object to execute query
+                                                try {
+                                                    stmt = con.createStatement();
+                                                } catch (SQLException e1) {
+                                                    e1.printStackTrace();
+                                                }
+
+                                                // executing SELECT query
+                                                try {
+                                                    rs = stmt.executeQuery(query);
+                                                } catch (SQLException e1) {
+                                                    e1.printStackTrace();
+                                                }
+                                                boolean bbb = false;
+                                                String fname="";
+                                                try {
+                                                    while (rs.next()) {
+                                                        String count = null;
+                                                        try {
+                                                            count = rs.getString(3);
+                                                        } catch (SQLException e1) {
+                                                            e1.printStackTrace();
+                                                        }
+                                                        if (rs.getString(4).equals(username.getText()) && rs.getString(5).equals(pass.getText()))
+                                                            System.out.println("You are logged in. INFO : " + count);
+                                                        bbb = rs.getString(4).equals(username.getText()) && rs.getString(5).equals(pass.getText());
+                                                        img=rs.getString(6);
+                                                        fname=rs.getString(1);
+                                                    }
+
+
+                                                    if (rs.wasNull() || !bbb){
+                                                        JOptionPane.showMessageDialog(null,"Wrong username or password");
+                                                       // System.exit(0);
+                                                    } else {
+                                                        islogin=true;
+                                                        JOptionPane.showMessageDialog(null, "You are successfully logged in");
+                                                        java.util.Date d = new java.util.Date();
+                                                        use.setToolTipText("Welcome, "+fname);
+                                                       // query = "INSERT INTO `Message` (`Login`,`Date`,`Message`) VALUES ('" + username.getText() + "','" + d.toString() + "','JOINED THE CHAT')";
+
+                                                      //  stmt.executeUpdate(query);
+                                                        ImageIcon i = new ImageIcon(new URL(img));
+                                                        i=new ImageIcon(i.getImage().getScaledInstance(350,350,1));
+                                                        use.setIcon(i);
+                                                        use.updateUI();
+                                                        query = "select * from `Notif`";
+                                                        try {
+                                                            rs = stmt.executeQuery(query);
+                                                        } catch (SQLException e1) {
+                                                            e1.printStackTrace();
+                                                        }
+                                                        try {
+                                                            while (rs.next()) {
+                                                                tek += 1;
+                                                            }
+                                                        } catch (SQLException e1) {
+                                                            e1.printStackTrace();
+                                                        }
+
+                                                        javax.swing.Timer t = new javax.swing.Timer(10000, new ActionListener() {
+                                                            @Override
+                                                            public void actionPerformed(ActionEvent e) {
+
+
+                                                                query = "select * from `Notif`";
+
+                                                                try {
+                                                                    rs = stmt.executeQuery(query);
+                                                                } catch (SQLException e1) {
+                                                                    e1.printStackTrace();
+                                                                }
+                                                                int cou = 0;
+
+                                                                try {
+                                                                    while (rs.next()) {
+                                                                        cou += 1;
+                                                                        if (cou > tek) {
+                                                                           if (!rs.getString(1).equals(username.getText())) trayIcon.displayMessage("Pixel.GameCenter",rs.getString(2), TrayIcon.MessageType.INFO);
+
+                                                                        }
+                                                                    }
+                                                                } catch (SQLException e1) {
+                                                                    e1.printStackTrace();
+                                                                }
+                                                                tek = cou;
+                                                            }
+                                                        });
+                                                        t.start();
+                                                    }
+                                                } catch (SQLException e1) {
+                                                    e1.printStackTrace();
+                                                } catch (MalformedURLException e1) {
+                                                    e1.printStackTrace();
+                                                }
+
+                                            }
+                                            frame.addWindowListener(new WindowListener() {
+                                                @Override
+                                                public void windowOpened(WindowEvent e) {
+
+                                                }
+
+                                                @Override
+                                                public void windowClosing(WindowEvent e) {
+                                                    openusr = false;
+                                                }
+
+                                                @Override
+                                                public void windowClosed(WindowEvent e) {
+
+                                                }
+
+                                                @Override
+                                                public void windowIconified(WindowEvent e) {
+
+                                                }
+
+                                                @Override
+                                                public void windowDeiconified(WindowEvent e) {
+
+                                                }
+
+                                                @Override
+                                                public void windowActivated(WindowEvent e) {
+
+                                                }
+
+                                                @Override
+                                                public void windowDeactivated(WindowEvent e) {
+
+                                                }
+                                            });
+
+
+                                        }
+                                    });
+
+                                    chat.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            if (islogin) {
+                                                JFrame f = new JFrame();
+                                                JPanel p = new JPanel();
+                                                JPanel dp = new JPanel();
+                                                JPanel p2 = new JPanel();
+                                                JTextField fild = new JTextField(10);
+                                                JButton b = new JButton("Send");
+                                                JButton b2 = new JButton("R");
+                                                p2.setLayout(new GridLayout(1, 3));
+                                                JTextPane area = new JTextPane();
+                                                JScrollPane pan = new JScrollPane(area);
+                                                area.setContentType("text/html");
+                                                content = "<html>";
+                                                area.setPreferredSize(new Dimension(500, 800));
+                                                f.setPreferredSize(new Dimension(550, 980));
+                                                f.add(p);
+                                                f.setResizable(false);
+                                                pan.setPreferredSize(new Dimension(520, 880));
+                                                // dp.setPreferredSize(new Dimension(520,880));
+                                                pan.getVerticalScrollBar().setValue(pan.getVerticalScrollBar().getMinimum());
+
+                                                p.add(pan, "Center");
+
+                                                p.add(p2, "South");
+                                                p2.add(fild);
+                                                p2.add(b);
+
+                                                area.setEditable(false);
+                                                try {
+                                                    Image img = ImageIO.read(Main.class.getClassLoader().getResource("drawing.png"));
+                                                    f.setIconImage(img);
+                                                } catch (IOException ee) {
+                                                    ee.printStackTrace();
+                                                }
+
+                                                f.setTitle("Pixel.Chat Speaker: " + username.getText());
+                                                query = "select * from `Message`";
+                                                try {
+                                                    rs = stmt.executeQuery(query);
+                                                } catch (SQLException e1) {
+                                                    e1.printStackTrace();
+                                                }
+                                                try {
+                                                    while (rs.next()) {
+                                                        tek += 1;
+                                                        content += rs.getString(3);
+
+                                                        area.setText(content);
+                                                    }
+                                                } catch (SQLException e1) {
+                                                    e1.printStackTrace();
+                                                }
+
+
+                                                b.addActionListener(new ActionListener() {
+                                                    @Override
+                                                    public void actionPerformed(ActionEvent e) {
+                                                        if (!fild.getText().equals("")) {
+                                                            java.util.Date d = new java.util.Date();
+                                                            String fincont = "<br><p style=\"border: 1px solid black; padding: 5px;\"><img src=\"" + img + "\" width=40 heigth=40>" + username.getText() + ": <b>" + fild.getText() + "</b> (" + d.toString() + ")</p></br>";
+                                                            query = "INSERT INTO `Message` (`Login`,`Date`,`Message`) VALUES ('" + username.getText() + "','" + d.toString() + "','" + fincont + "')";
+                                                            try {
+                                                                stmt.executeUpdate(query);
+                                                            } catch (SQLException e1) {
+                                                                e1.printStackTrace();
+                                                            }
+                                                            fild.setText("");
+                                                            pan.getVerticalScrollBar().setValue(pan.getVerticalScrollBar().getMaximum());
+                                                        }
+                                                    }
+                                                });
+                                                javax.swing.Timer t = new javax.swing.Timer(2000, new ActionListener() {
+                                                    @Override
+                                                    public void actionPerformed(ActionEvent e) {
+                                                        query = "select * from `Message`";
+
+                                                        try {
+                                                            rs = stmt.executeQuery(query);
+                                                        } catch (SQLException e1) {
+                                                            e1.printStackTrace();
+                                                        }
+                                                        int cou = 0;
+
+                                                        try {
+                                                            while (rs.next()) {
+                                                                cou += 1;
+                                                                if (cou > tek) {
+                                                                    content += rs.getString(3);
+                                                                    area.setText(content);
+                                                                    pan.getVerticalScrollBar().setValue(pan.getVerticalScrollBar().getMaximum());
+
+                                                                }
+                                                            }
+                                                        } catch (SQLException e1) {
+                                                            e1.printStackTrace();
+                                                        }
+                                                        tek = cou;
+                                                    }
+                                                });
+
+
+                                                f.pack();
+                                                f.setVisible(true);
+                                                t.start();
+                                            } else {
+                                                JOptionPane.showMessageDialog(null, "Please, login into your Pixel.Account!", "Error", JOptionPane.OK_CANCEL_OPTION);
+                                            }
+                                        }
+                                    });
+                                }
+
+                            });
 
 
         item.addActionListener(new ActionListener() {
@@ -502,6 +863,12 @@ ope.setToolTipText("Load ROM");
                 public void actionPerformed(ActionEvent e) {
                     if (e.getSource() == b) {
                         GameBoyFrame gbf = new GameBoyFrame(products.get(finalJ));
+                        query = "INSERT INTO `Notif` (`username`,`notif`) VALUES ('" + username.getText() + "','" + username.getText() + " is playing "+products.get(finalJ).name+"')";
+                        try {
+                            stmt.executeUpdate(query);
+                        } catch (SQLException e1) {
+                            e1.printStackTrace();
+                        }
                     }
                 }
             });
@@ -606,9 +973,10 @@ ope.setToolTipText("Load ROM");
         JScrollPane pp = new JScrollPane(list);
 
 
-        pp.setPreferredSize(new Dimension(830, 530));
+        pp.setPreferredSize(new Dimension(870, 530));
         //pp.setViewportView(list);
         p.add(pp, "Center");
+
         p.add(anekdot, "South");
 
 

@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="jdbc-local-1.0.0.final-sources">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../untitled19/mysql-connector-java-5.1.42-bin.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/../untitled19/jdbc-local-1.0.0.final-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
