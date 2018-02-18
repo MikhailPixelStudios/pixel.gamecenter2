@@ -389,7 +389,7 @@ open_user.addActionListener(new ActionListener() {
                                                             e1.printStackTrace();
                                                         }
 
-                                                        javax.swing.Timer t = new javax.swing.Timer(10000, new ActionListener() {
+                                                        javax.swing.Timer t1 = new javax.swing.Timer(5000, new ActionListener() {
                                                             @Override
                                                             public void actionPerformed(ActionEvent e) {
 
@@ -417,8 +417,9 @@ open_user.addActionListener(new ActionListener() {
                                                                 tek = cou;
                                                             }
                                                         });
-                                                        t.start();
+                                                        t1.start();
                                                     }
+
                                                 } catch (SQLException e1) {
                                                     e1.printStackTrace();
                                                 } catch (MalformedURLException e1) {
@@ -483,11 +484,11 @@ open_user.addActionListener(new ActionListener() {
                                                 JScrollPane pan = new JScrollPane(area);
                                                 area.setContentType("text/html");
                                                 content = "<html>";
-                                                area.setPreferredSize(new Dimension(500, 800));
-                                                f.setPreferredSize(new Dimension(550, 980));
+                                                area.setPreferredSize(new Dimension(500, 600));
+                                                f.setPreferredSize(new Dimension(550, 740));
                                                 f.add(p);
                                                 f.setResizable(false);
-                                                pan.setPreferredSize(new Dimension(520, 880));
+                                                pan.setPreferredSize(new Dimension(520, 640));
                                                 // dp.setPreferredSize(new Dimension(520,880));
                                                 pan.getVerticalScrollBar().setValue(pan.getVerticalScrollBar().getMinimum());
 
@@ -537,7 +538,7 @@ open_user.addActionListener(new ActionListener() {
                                                                 e1.printStackTrace();
                                                             }
                                                             fild.setText("");
-                                                            pan.getVerticalScrollBar().setValue(pan.getVerticalScrollBar().getMaximum());
+                                                            //pan.getVerticalScrollBar().setValue(pan.getVerticalScrollBar().getMaximum());
                                                         }
                                                     }
                                                 });
